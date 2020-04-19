@@ -3,7 +3,6 @@ import logging
 
 import faust
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -46,24 +45,26 @@ async def transform_station(stream):
     async for event in stream:
         """Transform station data"""
 
-        line = None
-
-        if event.red is True:
-            line = 'red'
-        elif event.blue is True:
-            line = 'blue'
-        elif event.green is True:
-            line = 'green'
-        else:
-            logger.info(f"No line color for {event.station_id}")
-
-        transformed = TransformedStation(
+        transformed_station = TransformedStation(
             station_id=event.station_id,
             station_name=event.station_name,
             order=event.order,
-            line=line
+            line=get_line(event)
         )
-        table[event.station_id] = transformed
+        table[event.station_id] = transformed_station
+
+
+def get_line(event):
+    if event.red is True:
+        return 'red'
+    elif event.blue is True:
+        return 'blue'
+    elif event.green is True:
+        return 'green'
+    else:
+        logger.info(f"No line color for {event.station_id}")
+    return None
+
 
 if __name__ == "__main__":
     app.main()
