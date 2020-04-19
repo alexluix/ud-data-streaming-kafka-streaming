@@ -65,7 +65,7 @@ class Line:
             try:
                 value = json.loads(message.value())
                 self._handle_station(value)
-            except Exception as _:
+            except:
                 logger.error(f"Unable to parse station: {message.value()}")
 
         elif "cta.data2.station.arrivals." in message.topic():
