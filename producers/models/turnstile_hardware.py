@@ -1,12 +1,9 @@
 import logging
 import math
-from pathlib import Path
 import random
+from pathlib import Path
 
 import pandas as pd
-
-from models.producer import Producer
-
 
 logger = logging.getLogger(__name__)
 
@@ -51,16 +48,19 @@ class TurnstileHardware:
         ratio = hour_curve.iloc[0]["ridership_ratio"]
         total_steps = int(60 / (60 / time_step.total_seconds()))
 
-        num_riders = 0
-        dow = timestamp.weekday()
-        if dow >= 0 or dow < 5:
-            num_riders = self.weekday_ridership
-        elif dow == 6:
-            num_riders = self.saturday_ridership
-        else:
-            num_riders = self.sunday_ridership
+        num_riders = self.get_num_riders(timestamp)
 
         # Calculate approximation of number of entries for this simulation step
         num_entries = int(math.floor(num_riders * ratio / total_steps))
         # Introduce some randomness in the data
         return max(num_entries + random.choice(range(-5, 5)), 0)
+
+    def get_num_riders(self, timestamp):
+        dow = timestamp.weekday()
+
+        if dow >= 0 or dow < 5:
+            return self.weekday_ridership
+        elif dow == 6:
+            return self.saturday_ridership
+        else:
+            return self.sunday_ridership

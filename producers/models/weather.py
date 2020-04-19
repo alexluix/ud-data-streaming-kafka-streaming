@@ -1,10 +1,9 @@
 """Methods pertaining to weather data"""
-from enum import IntEnum
 import json
 import logging
-from pathlib import Path
 import random
-import urllib.parse
+from enum import IntEnum
+from pathlib import Path
 
 import requests
 
@@ -16,11 +15,9 @@ logger = logging.getLogger(__name__)
 class Weather(Producer):
     """Defines a simulated weather model"""
 
-    status = IntEnum(
-        "status", "sunny partly_cloudy cloudy windy precipitation", start=0
-    )
+    status = IntEnum("status", "sunny partly_cloudy cloudy windy precipitation", start=0)
 
-    rest_proxy_url = "http://localhost:8082"
+    rest_proxy_url = "http://0.0.0.0:8082"
     topic_name_prefix = "cta.data2.weather"
 
     key_schema = None
