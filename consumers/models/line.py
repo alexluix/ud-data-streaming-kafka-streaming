@@ -26,6 +26,8 @@ class Line:
         """Adds the station to this Line's data model"""
         if value["line"] != self.color:
             return
+
+        logger.info(f"Stored station {value['station_id']} for line {self.color}")
         self.stations[value["station_id"]] = Station.from_message(value)
 
     def _handle_arrival(self, message):
@@ -46,9 +48,11 @@ class Line:
 
         station_id = value.get("station_id")
         station = self.stations.get(station_id)
+
         if station is None:
-            logger.debug("unable to handle message due to missing station")
+            logger.debug("arrival skipped due to missing station")
             return
+
         station.handle_arrival(
             value.get("direction"), value.get("train_id"), value.get("train_status")
         )
@@ -61,23 +65,28 @@ class Line:
             try:
                 value = json.loads(message.value())
                 self._handle_station(value)
-            except Exception as e:
-                logger.fatal("bad station? %s, %s", value, e)
+            except Exception as _:
+                logger.error(f"Unable to parse station: {message.value()}")
+
         elif "cta.data2.station.arrivals." in message.topic():
             logger.info(f"arrival arrived, topic: {message.topic()}")
 
             self._handle_arrival(message)
+
         elif message.topic() == "TURNSTILE_SUMMARY":
             logger.info(f"turnstile arrived, topic: {message.topic()}")
 
             json_data = json.loads(message.value())
             station_id = json_data.get("STATION_ID")
             station = self.stations.get(station_id)
+
             if station is None:
-                logger.debug("unable to handle message due to missing station")
+                logger.debug("turnstile skipped due to missing station")
                 return
+
             station.process_message(json_data)
+
         else:
-            logger.debug(
+            logger.error(
                 "unable to find handler for message from topic %s", message.topic
             )
